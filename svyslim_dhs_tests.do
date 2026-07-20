@@ -1,0 +1,154 @@
+*==================================================================*
+* svyslim_dhs_test.do
+* Real-data test of svyslim on the FREE DHS model dataset (no login).
+*
+* 1) Download "Individual Recode -> zzir62dt.zip (Stata)" from
+*    https://www.dhsprogram.com/data/Download-Model-Datasets.cfm
+* 2) Unzip -> ZZIR62FL.DTA
+* 3) Put ZZIR62FL.DTA and svyslim.ado in the same folder, cd there, run this.
+*==================================================================*
+
+/***Creating directory and putting the adofile in it
+capture mkdir "C:\Users\Daves\ado"
+capture mkdir "C:\Users\Daves\ado\personal"
+copy "C:\Users\Daves\Downloads\SVY NEW\svyslim.ado" "C:\Users\Daves\ado\personal\svyslim.ado", replace
+
+discard
+which svyslim
+******************************************************/
+
+clear all
+set more off
+
+* OPTION: if your .DTA is NOT in the current folder, set its full path here.
+* Leave empty to auto-detect in the current folder.
+local dhsfile "C:\Users\Daves\Downloads\SVY NEW\ZZIR62FL.DTA"        // e.g.  "C:/Users/Daves/Downloads/ZZIR62FL.DTA
+
+* --- find svyslim ---
+adopath + "C:\Users\Daves\Downloads\SVY NEW"
+capture which svyslim
+if _rc {
+    di as err "svyslim.ado not found. cd into its folder, then rerun."
+    exit 199
+}
+discard
+
+*------------------------------------------------------------------*
+* Robustly locate (or unzip) the DHS model Stata file.
+* NOTE: the zip is zzir62DT.zip but the file inside is ZZIR62FL.DTA
+*------------------------------------------------------------------*
+if "`dhsfile'" == "" {
+    foreach c in "ZZIR62FL.DTA" "zzir62fl.dta" {
+        capture confirm file "`c'"
+        if !_rc local dhsfile "`c'"
+    }
+    if "`dhsfile'" == "" {
+        capture confirm file "zzir62dt.zip"
+        if !_rc {
+            di as txt "Found zzir62dt.zip - unzipping it..."
+            capture unzipfile "zzir62dt.zip", replace
+            capture confirm file "ZZIR62FL.DTA"
+            if !_rc local dhsfile "ZZIR62FL.DTA"
+        }
+    }
+}
+if "`dhsfile'" == "" {
+    di as err "----------------------------------------------------------------"
+    di as err "Could not find the DHS Stata file in this folder:"
+    di as err "   `C:\Users\Daves\Downloads\SVY NEW'"
+    di as err "Do ONE of these, then rerun:"
+    di as err "  (a) put ZZIR62FL.DTA (or zzir62dt.zip) in this folder, OR"
+    di as err "  (b) in Stata:  cd into the folder that holds it, OR"
+    di as err `"  (c) set near the top:  local dhsfile "C:/full/path/ZZIR62FL.DTA""'
+    di as txt "Stata (.dta) files I can see in the current folder:"
+    capture noisily dir *.dta
+    di as txt "(If nothing is listed, the file is in another folder - use (b).)"
+    exit 601
+}
+
+use "`dhsfile'", clear
+di as txt "Loaded `dhsfile':  " _N " women"
+
+*------------------------------------------------------------------*
+* Set up the DHS complex survey design
+*   weight  = v005/1,000,000     PSU = v021 (fallback v001)
+*   strata  = region x urban/rural (always available; for official
+*             sampling-error replication use the survey's v022/v023)
+*------------------------------------------------------------------*
+gen double wt = v005/1000000
+capture confirm variable v021
+if _rc local psuvar v001
+else   local psuvar v021
+egen strata = group(v024 v025)
+svyset `psuvar' [pw=wt], strata(strata) singleunit(centered)
+
+*------------------------------------------------------------------*
+* A subpopulation that is ABSENT from some clusters:
+*   currently pregnant women (v213==1)  ~ 5-10%
+* Outcome for the demo: secondary+ education (defined for all women)
+*------------------------------------------------------------------*
+gen byte preg  = (v213==1)
+gen byte highed = (v106>=2) if !missing(v106)
+
+quietly count if preg
+di as txt _n "Subpopulation (currently pregnant): " r(N) " women"
+
+*==================================================================*
+* helper
+*==================================================================*
+capture program drop _gb
+program define _gb
+    args cf pre
+    scalar `pre'_b  = _b[`cf']
+    scalar `pre'_se = _se[`cf']
+    scalar `pre'_df = e(df_r)
+end
+
+*==================================================================*
+* TEST 1: LOGIT   full svy,subpop()   vs   svyslim + svy,subpop()
+*==================================================================*
+di as res _n "===== LOGIT: full svy,subpop vs svyslim ====="
+svy, subpop(preg): logit highed v012
+_gb v012 fu
+
+preserve
+    svyslim preg, complete(highed v012)
+    local kept = r(N_kept)
+    local full = r(N_full)
+    svy, subpop(preg): logit highed v012
+    _gb v012 sl
+restore
+
+di as txt _n "  coefficient on v012 (age):"
+di as txt "    full svy,subpop : b=" as res %11.6f scalar(fu_b) ///
+   as txt "  se=" as res %10.6f scalar(fu_se) as txt "  df=" as res scalar(fu_df)
+di as txt "    svyslim+subpop  : b=" as res %11.6f scalar(sl_b) ///
+   as txt "  se=" as res %10.6f scalar(sl_se) as txt "  df=" as res scalar(sl_df)
+di as txt "    |b diff| = " as res %9.2e abs(scalar(fu_b)-scalar(sl_b)) ///
+   as txt "   |se diff| = " as res %9.2e abs(scalar(fu_se)-scalar(sl_se))
+di as txt "    rows: full = " as res `full' as txt "   after svyslim = " as res `kept'
+
+*==================================================================*
+* TEST 2: MEAN age of pregnant women
+*==================================================================*
+di as res _n "===== MEAN of v012 (age): full vs svyslim ====="
+svy, subpop(preg): mean v012
+_gb v012 fu
+preserve
+    svyslim preg, complete(v012)
+    svy, subpop(preg): mean v012
+    _gb v012 sl
+restore
+di as txt "    full svy,subpop : mean=" as res %11.6f scalar(fu_b) as txt "  se=" as res %10.6f scalar(fu_se)
+di as txt "    svyslim+subpop  : mean=" as res %11.6f scalar(sl_b) as txt "  se=" as res %10.6f scalar(sl_se)
+di as txt "    |diff| mean = " as res %9.2e abs(scalar(fu_b)-scalar(sl_b)) ///
+   as txt "   |diff| se = " as res %9.2e abs(scalar(fu_se)-scalar(sl_se))
+
+di as txt _n "If |b diff| and |se diff| are ~1e-6 or smaller, svyslim reproduced"
+di as txt "svy,subpop() on a fraction of the rows. Scale up by pooling your"
+di as txt "36-country DHS the same way for the real speed payoff."
+
+
+
+
+
