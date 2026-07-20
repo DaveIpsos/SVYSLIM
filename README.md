@@ -99,13 +99,8 @@ will use, so no marker is dropped for a missing value.
 | `svyslim.sthlp` | in-Stata help (`help svyslim`) |
 | `svyslim_verify.do` | proof: basic models + `totals` + `impute()`, simulated survey |
 | `svyslim_models_test.do` | proof: betareg / stcox / zip / zinb / tpoisson / tnbreg / multilevel / gsem |
-| `svyslim_dhs_test.do` | proof on the free DHS model dataset |
-| `Complex_Survey_and_svyslim_Guide.pdf` | beginner-friendly study guide (PDF) |
-| `Complex_Survey_and_svyslim_Guide.docx` | the same guide, editable Word version |
-| `QUICKSTART.txt` | one-page install and syntax reference |
-| `svyslim_manuscript.docx` | Stata Journal manuscript (draft) |
-| `svyslim_manuscript_preview.pdf` | PDF preview of the manuscript |
-| `figure1_subpop.pdf`, `figure2_keepvsslim.pdf` | manuscript figures (grayscale, 300 dpi) |
+| `svyslim_dhs_tests.do` | proof on the free DHS model dataset |
+
 
 The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
 from-scratch tutorial: it explains complex survey concepts (weights,
