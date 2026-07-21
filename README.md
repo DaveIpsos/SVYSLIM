@@ -133,18 +133,18 @@ and a complex multilevel model (`melogit`). Route B is `svyslim` +
 `svy, subpop()` on the reduced file (its time includes the one-time
 reduction). Selected rows at 6M:
 
-| Model | Subpop | full (s) | svyslim (s) | speedup |
+| Model | Subpop | full (s) | svyslim (s) | speedup | sediff |
 |---|---|---|---|---|
-| logit | 50% | 19.7 | 9.4 | 2.10× |
-| logit | 20% | 16.3 | 4.4 | 3.72× |
-| logit | 5% | 18.8 | 2.5 | **7.47×** |
-| melogit | 50% | 126.1 | 80.3 | 1.57× |
-| melogit | 20% | 72.4 | 29.2 | 2.48× |
-| melogit | 5% | 54.9 | 7.9 | **6.95×** |
+| logit | 50% | 19.7 | 9.4 | 2.10× | 2.2e-19 |
+| logit | 20% | 16.3 | 4.4 | 3.72× | 0.0e+00 |
+| logit | 5% | 18.8 | 2.5 | **7.47×** | 0.0e+00 |
+| melogit | 50% | 126.1 | 80.3 | 1.57× | 0.0e+00 |
+| melogit | 20% | 72.4 | 29.2 | 2.48× | 0.0e+00 |
+| melogit | 5% | 54.9 | 7.9 | **6.95×** | 0.0e+00 |
 
 Two results hold across all 18 cells (three sizes × three subpop shares
 × two models): (1) **exact agreement** — the largest difference in the
-x1 standard error between full-data and slimmed runs was 1.7e-18
+x1 standard error (sediff) between full-data and slimmed runs was 1.7e-18
 (machine precision), so exactness does not degrade as data grow; and
 (2) `svyslim` was **faster in every cell** — 1.47× to 7.47×. The
 speedup grows monotonically as the subpopulation shrinks, because that
