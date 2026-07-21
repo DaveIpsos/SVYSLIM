@@ -172,9 +172,9 @@ ratios are the point.)
 
 `svyslim` shrinks data only when PSUs are real clusters holding many
 people, so a scattered subpopulation leaves whole clusters empty. It
-does **not** help when each individual is their own PSU (e.g., BRFSS as
-usually svyset) — then nearly every excluded person would become a
-marker. If the subpopulation appears in every PSU, plain `keep` already
+does **not** help when each individual is their own PSU — 
+then nearly every excluded person would become a marker. 
+If the subpopulation appears in every PSU, plain `keep` already
 matches `svy, subpop()` and `svyslim` simply adds zero markers.
 
 ## Status and caveats
