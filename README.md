@@ -101,6 +101,7 @@ will use, so no marker is dropped for a missing value.
 | `svyslim_models_test.do` | proof: betareg / stcox / zip / zinb / tpoisson / tnbreg / multilevel / gsem |
 | `svyslim_dhs_tests.do` | proof on the free DHS model dataset |
 | `svyslim_scaling_benchmark.do` | speed benchmark vs `svy, subpop()` at 2–6M rows |
+| `zzir62dt.zip` | free to use DHS dataset | 
 
 The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
 from-scratch tutorial: it explains complex survey concepts (weights,
