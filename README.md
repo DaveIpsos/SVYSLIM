@@ -134,7 +134,7 @@ and a complex multilevel model (`melogit`). Route B is `svyslim` +
 reduction). Selected rows at 6M:
 
 | Model | Subpop | full (s) | svyslim (s) | speedup | sediff |
-|---|---|---|---|---|
+|---|---|---|---|---|---|
 | logit | 50% | 19.7 | 9.4 | 2.10× | 2.2e-19 |
 | logit | 20% | 16.3 | 4.4 | 3.72× | 0.0e+00 |
 | logit | 5% | 18.8 | 2.5 | **7.47×** | 0.0e+00 |
