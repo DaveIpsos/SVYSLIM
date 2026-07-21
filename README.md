@@ -100,7 +100,8 @@ will use, so no marker is dropped for a missing value.
 | `svyslim_verify.do` | proof: basic models + `totals` + `impute()`, simulated survey |
 | `svyslim_models_test.do` | proof: betareg / stcox / zip / zinb / tpoisson / tnbreg / multilevel / gsem |
 | `svyslim_dhs_tests.do` | proof on the free DHS model dataset |
-
+| `svyslim_scaling_benchmark.do` | speed benchmark vs `svy, subpop()` at 2–6M rows |
+| `figure1_subpop.pdf`, `figure2_keepvsslim.pdf` | manuscript figures (grayscale, 300 dpi) |
 
 The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
 from-scratch tutorial: it explains complex survey concepts (weights,
@@ -122,6 +123,36 @@ Run any of the three test do-files. For every model, the reported
 `|b diff|` and `|se diff|` between the full-data and slimmed runs should
 be about 1e-6 or smaller. `svyslim_verify.do` also checks that `totals`
 reproduces `e(N_pop)` and that `impute()` repairs bad markers.
+
+## Speed on large data
+
+Benchmarked against full-data `svy, subpop()` on simulated stratified
+cluster samples at pooled-survey scale (2, 4, and 6 million rows), at
+three subpopulation sizes (50%, 20%, 5%), for a simple model (`logit`)
+and a complex multilevel model (`melogit`). Route B is `svyslim` +
+`svy, subpop()` on the reduced file (its time includes the one-time
+reduction). Selected rows at 6M:
+
+| Model | Subpop | full (s) | svyslim (s) | speedup |
+|---|---|---|---|---|
+| logit | 50% | 19.7 | 9.4 | 2.10× |
+| logit | 20% | 16.3 | 4.4 | 3.72× |
+| logit | 5% | 18.8 | 2.5 | **7.47×** |
+| melogit | 50% | 126.1 | 80.3 | 1.57× |
+| melogit | 20% | 72.4 | 29.2 | 2.48× |
+| melogit | 5% | 54.9 | 7.9 | **6.95×** |
+
+Two results hold across all 18 cells (three sizes × three subpop shares
+× two models): (1) **exact agreement** — the largest difference in the
+x1 standard error between full-data and slimmed runs was 1.7e-18
+(machine precision), so exactness does not degrade as data grow; and
+(2) `svyslim` was **faster in every cell** — 1.47× to 7.47×. The
+speedup grows monotonically as the subpopulation shrinks, because that
+is what `svyslim` deletes, so the largest gains (up to ~7.5×) come in
+`svyslim`'s intended regime: a small subpopulation of a large file.
+Even at a 50% subpopulation it was 1.5–2.8× faster and never slower.
+Reproduce with `svyslim_scaling_benchmark.do`. (Absolute times depend
+on hardware and Stata flavor; the ratios are the point.)
 
 ## When it helps — and when it does not
 
