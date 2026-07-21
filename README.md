@@ -99,8 +99,14 @@ will use, so no marker is dropped for a missing value.
 | `svyslim.sthlp` | in-Stata help (`help svyslim`) |
 | `svyslim_verify.do` | proof: basic models + `totals` + `impute()`, simulated survey |
 | `svyslim_models_test.do` | proof: betareg / stcox / zip / zinb / tpoisson / tnbreg / multilevel / gsem |
-| `svyslim_dhs_tests.do` | proof on the free DHS model dataset |
+| `svyslim_dhs_test.do` | proof on the free DHS model dataset |
+| `svyslim_scaling_benchmark.do` | speed benchmark vs svy, subpop() at 2-6M rows |
 | `svyslim_scaling_benchmark.do` | speed benchmark vs `svy, subpop()` at 2–6M rows |
+| `Complex_Survey_and_svyslim_Guide.pdf` | beginner-friendly study guide (PDF) |
+| `Complex_Survey_and_svyslim_Guide.docx` | the same guide, editable Word version |
+| `QUICKSTART.txt` | one-page install and syntax reference |
+| `svyslim_manuscript.docx` | Stata Journal manuscript (draft) |
+| `svyslim_manuscript_preview.pdf` | PDF preview of the manuscript |
 | `figure1_subpop.pdf`, `figure2_keepvsslim.pdf` | manuscript figures (grayscale, 300 dpi) |
 
 The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
@@ -129,30 +135,45 @@ reproduces `e(N_pop)` and that `impute()` repairs bad markers.
 Benchmarked against full-data `svy, subpop()` on simulated stratified
 cluster samples at pooled-survey scale (2, 4, and 6 million rows), at
 three subpopulation sizes (50%, 20%, 5%), for a simple model (`logit`)
-and a complex multilevel model (`melogit`). Route B is `svyslim` +
-`svy, subpop()` on the reduced file (its time includes the one-time
-reduction). Selected rows at 6M:
+and a complex multilevel model (`melogit`). Route **A** is full-data
+`svy, subpop()`; route **B** is `svyslim` + `svy, subpop()` on the
+reduced file (its time includes the one-time reduction). All 18 cells:
 
-| Model | Subpop | full (s) | svyslim (s) | speedup | sediff |
-|---|---|---|---|---|---|
-| logit | 50% | 19.7 | 9.4 | 2.10× | 2.2e-19 |
-| logit | 20% | 16.3 | 4.4 | 3.72× | 0.0e+00 |
-| logit | 5% | 18.8 | 2.5 | **7.47×** | 0.0e+00 |
-| melogit | 50% | 126.1 | 80.3 | 1.57× | 0.0e+00 |
-| melogit | 20% | 72.4 | 29.2 | 2.48× | 0.0e+00 |
-| melogit | 5% | 54.9 | 7.9 | **6.95×** | 0.0e+00 |
+| Model | Subpop | Total N | Subpop N | A: full (s) | B: svyslim (s) | Saved (s) | % faster | Speedup | se diff |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| logit | 50% | 2M | 1,000,000 | 7.7 | 2.8 | 4.9 | 64% | 2.78× | 4.3e-19 |
+| logit | 50% | 4M | 2,000,000 | 14.2 | 6.7 | 7.6 | 53% | 2.13× | 4.3e-19 |
+| logit | 50% | 6M | 3,000,000 | 19.7 | 9.4 | 10.3 | 52% | 2.10× | 2.2e-19 |
+| logit | 20% | 2M | 400,000 | 5.1 | 1.7 | 3.5 | 68% | 3.11× | 1.7e-18 |
+| logit | 20% | 4M | 800,000 | 11.3 | 3.2 | 8.1 | 72% | 3.57× | 4.3e-19 |
+| logit | 20% | 6M | 1,200,000 | 16.3 | 4.4 | 11.9 | 73% | 3.72× | 0.0e+00 |
+| logit | 5% | 2M | 100,000 | 5.5 | 1.3 | 4.2 | 77% | 4.33× | 0.0e+00 |
+| logit | 5% | 4M | 200,000 | 10.7 | 1.9 | 8.8 | 82% | 5.62× | 1.7e-18 |
+| logit | 5% | 6M | 300,000 | 18.8 | 2.5 | 16.3 | 87% | **7.47×** | 0.0e+00 |
+| melogit | 50% | 2M | 1,000,000 | 36.6 | 24.8 | 11.8 | 32% | 1.47× | 4.3e-19 |
+| melogit | 50% | 4M | 2,000,000 | 128.9 | 82.1 | 46.8 | 36% | 1.57× | 0.0e+00 |
+| melogit | 50% | 6M | 3,000,000 | 126.1 | 80.3 | 45.8 | 36% | 1.57× | 0.0e+00 |
+| melogit | 20% | 2M | 400,000 | 23.2 | 10.2 | 12.9 | 56% | 2.27× | 0.0e+00 |
+| melogit | 20% | 4M | 800,000 | 52.1 | 22.2 | 29.9 | 57% | 2.34× | 0.0e+00 |
+| melogit | 20% | 6M | 1,200,000 | 72.4 | 29.2 | 43.2 | 60% | 2.48× | 0.0e+00 |
+| melogit | 5% | 2M | 100,000 | 18.6 | 3.5 | 15.1 | 81% | 5.28× | 1.7e-18 |
+| melogit | 5% | 4M | 200,000 | 39.7 | 6.1 | 33.6 | 85% | 6.54× | 0.0e+00 |
+| melogit | 5% | 6M | 300,000 | 54.9 | 7.9 | 47.0 | 86% | **6.95×** | 0.0e+00 |
 
 Two results hold across all 18 cells (three sizes × three subpop shares
 × two models): (1) **exact agreement** — the largest difference in the
-x1 standard error (sediff) between full-data and slimmed runs was 1.7e-18
-(machine precision), so exactness does not degrade as data grow; and
-(2) `svyslim` was **faster in every cell** — 1.47× to 7.47×. The
-speedup grows monotonically as the subpopulation shrinks, because that
-is what `svyslim` deletes, so the largest gains (up to ~7.5×) come in
-`svyslim`'s intended regime: a small subpopulation of a large file.
+x1 standard error (`se diff`) between full-data and slimmed runs was
+1.7 × 10⁻¹⁸ (machine precision), so exactness does not degrade as data
+grow; and (2) `svyslim` was **faster in every cell** — 1.47× to 7.47×.
+The speedup grows monotonically as the subpopulation shrinks, because
+that is what `svyslim` deletes, so the largest gains (up to ~7.5×) come
+in `svyslim`'s intended regime: a small subpopulation of a large file.
 Even at a 50% subpopulation it was 1.5–2.8× faster and never slower.
-Reproduce with `svyslim_scaling_benchmark.do`. (Absolute times depend
-on hardware and Stata flavor; the ratios are the point.)
+Reproduce with `svyslim_scaling_benchmark.do`. (`A` = full-data
+`svy, subpop()`; `B` = `svyslim` + `svy, subpop()`, including the
+one-time reduction; Saved = A − B; % faster = 100 × (A − B)/A;
+Speedup = A/B. Absolute times depend on hardware and Stata flavor; the
+ratios are the point.)
 
 ## When it helps — and when it does not
 
