@@ -14,7 +14,7 @@ Department of Sociology, Florida State University, Tallahassee, FL, USA.
 
 You have millions of survey rows but only care about ~5,000 respondents
 (e.g., currently pregnant women). Keeping the full file in memory makes
-every model crawl — but the standard advice says you *cannot* delete the
+every model crawl, but the standard advice says you *cannot* delete the
 other rows: `keep if subpop` silently deletes every PSU (cluster) that
 contains no subpopulation members, which changes the design degrees of
 freedom and the per-stratum cluster counts, so standard errors no longer
@@ -28,15 +28,15 @@ each PSU that would otherwise vanish**. Markers are outside the
 subpopulation, so they contribute zero to estimation — but they keep
 their PSUs alive and counted, exactly as `svy, subpop()` treats empty
 PSUs. Result: `svy, subpop()` on the small file reproduces the full-data
-result — coefficients, standard errors, and design df — verified to
+result: coefficients, standard errors, and design df — verified to
 machine precision in simulation.
 
 Because `svyslim` only slims the *data* and never touches the model, it
-works with **any** command that runs under `svy:` — regress, logit,
+works with **any** command that runs under `svy:` (regress, logit,
 probit, mlogit, ologit, poisson, nbreg, betareg, stcox, zip, zinb,
-tpoisson, tnbreg, mean, the multilevel commands (meglm, melogit,
+tpoisson, tnbreg, mean), the multilevel commands (meglm, melogit,
 meologit, mepoisson, menbreg), and gsem. (Multilevel note: `mixed` is
-not svy-supported — use `meglm, family(gaussian)` — and multilevel
+not svy-supported (use `meglm, family(gaussian)`) and multilevel
 models need a stage-weight svyset: `svyset psu, strata(s) || _n,
 weight(wt)`, with `pweight(wt)` passed to svyslim.)
 
@@ -64,8 +64,8 @@ svyslim subpopvar [, complete(varlist) totals impute(donor|all)
 
 **Two modes.** By default, coefficients, standard errors, and design df
 match the full data exactly; the estimated population size `e(N_pop)`
-does not (harmless for inference). Add the `totals` option — the
-Nichols (2007) variant — and markers carry the summed weights of the
+does not (harmless for inference). Add the `totals` option (the
+Nichols (2007) variant) and markers carry the summed weights of the
 dropped rows in their PSU, so `e(N_pop)` is preserved too.
 
 **The `impute()` option.** When an empty cluster has no fully observed
@@ -76,14 +76,14 @@ subpopulation rows are never touched**. `impute(donor)` fills blanks
 from rows of the *same* cluster only; cluster-wide-missing variables
 stay missing, matching how the full data drops that cluster.
 `impute(all)` additionally falls back to the variable's observed
-minimum anywhere in the data — always a real, type-valid code — so
+minimum anywhere in the data (always a real, type-valid code) so
 markers are always complete and every empty cluster is always retained
 (a deliberate design-based choice that can diverge slightly from the
 full-data run wherever full data would drop a cluster entirely). Off by
 default to preserve the exactness guarantee.
 
 **Two golden rules.** (1) On the slimmed file, always use
-`svy, subpop():`, never plain `svy:` — the markers must be excluded by
+`svy, subpop():`, never plain `svy:`. The markers must be excluded by
 `subpop()`. (2) Pass `complete()` listing every variable your models
 will use, so no marker is dropped for a missing value.
 
@@ -106,7 +106,7 @@ The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
 from-scratch tutorial: it explains complex survey concepts (weights,
 strata, PSUs, design df), shows with a hand-checkable worked example why
 `keep` and `svy, subpop()` disagree, and walks through `svyslim.ado`
-piece by piece — the code shown there is sliced directly from the ado,
+piece by piece. The code shown there is sliced directly from the ado,
 so the walkthrough always matches the real file, including the `totals`
 and `impute()` options.
 
@@ -172,8 +172,8 @@ ratios are the point.)
 
 `svyslim` shrinks data only when PSUs are real clusters holding many
 people, so a scattered subpopulation leaves whole clusters empty. It
-does **not** help when each individual is their own PSU — 
-then nearly every excluded person would become a marker. 
+does **not** help when each individual is their own PSU; 
+then, nearly every excluded person would become a marker. 
 If the subpopulation appears in every PSU, plain `keep` already
 matches `svy, subpop()` and `svyslim` simply adds zero markers.
 
