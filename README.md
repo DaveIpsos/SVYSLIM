@@ -156,7 +156,7 @@ reduced file (its time includes the one-time reduction). All 18 cells:
 Two results hold across all 18 cells (three sizes × three subpop shares
 × two models): (1) **exact agreement** — the largest difference in the
 x1 standard error (`se diff`) between full-data and slimmed runs was
-1.7 × 10⁻¹⁸ (machine precision), so exactness does not degrade as data
+$4.3 \times 10^{-19}$ (machine precision), so exactness does not degrade as data
 grow; and (2) `svyslim` was **faster in every cell** — 1.47× to 7.47×.
 The speedup grows monotonically as the subpopulation shrinks, because
 that is what `svyslim` deletes, so the largest gains (up to ~7.5×) come
