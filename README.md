@@ -95,6 +95,8 @@ will use, so no marker is dropped for a missing value.
 
 | File | What it is |
 |---|---|
+| `Cross-country tests.do` | pooled DHS data in Africa `svy, subpop()` vs `svyslim` |
+| `Nigeria Pooled Data Tests.do` | pooled DHS data (2008-2018) in Nigeria `svy, subpop()` vs `svyslim` |
 | `svyslim.ado` | the command (v1.3) |
 | `svyslim.sthlp` | in-Stata help (`help svyslim`) |
 | `svyslim_verify.do` | proof: basic models + `totals` + `impute()`, simulated survey |
