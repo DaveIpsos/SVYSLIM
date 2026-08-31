@@ -124,7 +124,6 @@ will use, so no marker is dropped for a missing value.
 | `svyslim_scaling_benchmark.do` | speed benchmark vs svy, subpop() at 2-6M rows |
 | `svyslim_scaling_benchmark.do` | speed benchmark vs `svy, subpop()` at 2–6M rows |
 | `Complex_Survey_and_svyslim_Guide.pdf` | beginner-friendly study guide (PDF) |
-| `Complex_Survey_and_svyslim_Guide.docx` | the same guide, editable Word version |
 
 
 The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
