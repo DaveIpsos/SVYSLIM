@@ -1,5 +1,5 @@
 {smcl}
-{* svyslim help v1.3}{...}
+{* svyslim help v1.4}{...}
 {hi:help svyslim}{...}
 {title:Title}
 
@@ -11,11 +11,19 @@ degrees of freedom {hline 2} on a fraction of the rows.{p_end}
 
 {title:Syntax}
 
+{p 4 8}Data-reduction form (shrink the data, then analyze):{p_end}
+
 {p 8 16}{cmd:svyslim} {it:subpopvar} [{cmd:,} {it:options}]{p_end}
 
+{p 4 8}One-line (prefix) form (reduce, analyze, and restore in one step):{p_end}
+
+{p 8 16}{cmd:svyslim} {it:subpopvar} [{cmd:,} {it:options}] {cmd::} {it:model_command}{p_end}
+
 {p 4 8}{it:subpopvar} is a numeric 0/1 indicator for your subpopulation
-(nonzero and nonmissing = member). It is the same variable you will later pass
-to {cmd:svy, subpop()}.{p_end}
+(nonzero and nonmissing = member); it is the same variable you pass to
+{cmd:svy, subpop()}. You create it yourself before calling {cmd:svyslim} --
+for example, {cmd:generate byte preg = (v213==1)} -- so that a value of 1 marks
+a subpopulation member and 0 marks a nonmember.{p_end}
 
 {synoptset 22 tabbed}{...}
 {synopthdr}
@@ -138,6 +146,37 @@ weight via {opt pweight()}:{p_end}
 {p 4 8}Note that {cmd:mixed} is not svy-supported at all; use
 {cmd:meglm ..., family(gaussian)} for multilevel linear regression.{p_end}
 
+{title:One-line (prefix) form}
+
+{p 4 8}When you only need to fit one model, the prefix form does the whole
+two-step in a single command: it {help preserve:preserves} your data, reduces
+it, runs {cmd:svy, subpop():} {it:model} on the reduced file, and restores your
+full data. The results shown are exactly {cmd:svy, subpop()}'s.{p_end}
+
+{p 8 12}{cmd:. use bigdata, clear}{p_end}
+{p 8 12}{cmd:. svyset psu [pw=wt], strata(strat)}{p_end}
+{p 8 12}{cmd:. generate byte mysubpop = (age>=65)}{space 6}// you define the subpop{p_end}
+{p 8 12}{cmd:. svyslim mysubpop, complete(health age female): ologit health age i.female}{p_end}
+
+{p 4 8}If you omit {opt complete()}, {cmd:svyslim} infers the model's variables
+automatically (here {cmd:health}, {cmd:age}, {cmd:female}), so the shortest form is:{p_end}
+
+{p 8 12}{cmd:. svyslim mysubpop: ologit health age i.female}{p_end}
+
+{p 4 8}Inference covers ordinary varlists and factor variables ({cmd:i.}, {cmd:c.},
+interactions). For a model that uses {cmd:if}/{cmd:in}, time-series operators, or
+other unusual syntax, give {opt complete()} explicitly. For a multilevel model,
+pass {opt pweight()} as usual:{p_end}
+
+{p 8 12}{cmd:. svyset psu, strata(strat) || _n, weight(wt)}{p_end}
+{p 8 12}{cmd:. svyslim mysubpop, pweight(wt): melogit health age || psu:}{p_end}
+
+{p 4 8}Because the prefix form restores your full data when it finishes, run
+postestimation ({cmd:margins}, {cmd:predict}) via the two-step form instead, so
+the reduced estimation sample stays in memory. Fitting many models is also faster
+with the two-step form (reduce and save once, then analyze repeatedly) than with
+the prefix form (which reduces on each call).{p_end}
+
 {p 4 8}For {cmd:stcox}, run {cmd:stset} again on the slimmed file before
 {cmd:svy, subpop(): stcox} (weights come from {cmd:svyset}, not
 {cmd:stset}).{p_end}
@@ -172,6 +211,18 @@ markers).{p_end}
 {cmd:svyslim_dhs_test.do} (real DHS practice data). In each, {bf:|b diff|} and
 {bf:|se diff|} between the full-data and slimmed runs should be about 1e-6 or
 smaller.{p_end}
+
+{title:Speed}
+
+{p 4 8}In benchmarks at pooled-survey scale (2-6 million observations),
+{cmd:svyslim} reproduced {cmd:svy, subpop()} to machine precision while running
+1.5 to 7.5 times faster; the speedup grows as the subpopulation shrinks, because
+that is what {cmd:svyslim} deletes. In its intended regime -- a small
+subpopulation of a large file -- the measured speedups reach about seven-fold, so
+a multilevel model that takes roughly seven minutes on the full data finishes in
+about one minute on the reduced data. Reproduce with
+{cmd:svyslim_scaling_benchmark.do}; absolute times depend on hardware and Stata
+flavor, but the ratios do not.{p_end}
 
 {title:Remarks}
 

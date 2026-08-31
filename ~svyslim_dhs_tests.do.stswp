@@ -25,7 +25,7 @@ set more off
 local dhsfile "C:\Users\Daves\OneDrive - Florida State University\SVY NEW\ZZIR62FL.DTA"        // e.g.  "C:/Users/Daves/Downloads/ZZIR62FL.DTA
 
 * --- find svyslim ---
-adopath + "C:\Users\Daves\OneDrive - Florida State University\SVY NEW"
+adopath + "
 capture which svyslim
 if _rc {
     di as err "svyslim.ado not found. cd into its folder, then rerun."

@@ -1,12 +1,15 @@
-*! svyslim v1.3  Reduce svyset data to a subpopulation while PRESERVING the
+*! svyslim v1.4  Reduce svyset data to a subpopulation while PRESERVING the
 *! full survey design skeleton (every PSU and stratum), so that running
 *!       svy, subpop(var): <model>
 *! on the slimmed data reproduces the full-data  svy, subpop()  result
 *! (coefficients AND standard errors) essentially exactly, while keeping
 *! only the subpop rows plus one marker row per otherwise-empty PSU.
 *!
-*! Syntax:  svyslim subpopvar [, complete(varlist) totals
-*!            impute(donor|all) psu() strata() pweight()]
+*! Syntax (data-reduction):  svyslim subpopvar [, complete(varlist)
+*!            totals impute(donor|all) psu() strata() pweight()]
+*! Syntax (one-line prefix):  svyslim subpopvar [, options] : model
+*!            -- preserves data, reduces, runs svy,subpop(): model,
+*!               restores data; complete() inferred if omitted.
 *! The approach implements and automates a procedure sketched by Austin
 *! Nichols on Statalist (24 Nov 2007), who suggested a -svysubset- package;
 *! the totals option reproduces his summed-weight variant, which also
@@ -18,6 +21,98 @@
 
 program define svyslim, rclass
     version 14.0
+
+    * =================================================================
+    * ONE-LINE (PREFIX) MODE:  svyslim subpopvar [, opts] : model ...
+    * Non-destructive convenience wrapper. It preserves the data, runs
+    * the ordinary two-step (svyslim reduction, then svy, subpop():
+    * model) on the reduced file, and restores the full data. The
+    * results shown are svy, subpop()'s, exactly as in the two-step.
+    * Detected by the presence of a colon separating svyslim's own
+    * arguments from the model command that follows.
+    * =================================================================
+    if strpos(`"`0'"', ":") {
+        local cpos = strpos(`"`0'"', ":")
+        local pre  = trim(substr(`"`0'"', 1, `cpos'-1))
+        local cmd  = trim(substr(`"`0'"', `cpos'+1, .))
+        if `"`cmd'"' == "" {
+            display as error "svyslim: nothing after the colon; supply a"
+            display as error "model command, e.g.  svyslim mysubpop, " ///
+                "complete(y x): logit y x1 x2"
+            exit 198
+        }
+        * parse svyslim's own arguments (before the colon)
+        local 0 `"`pre'"'
+        syntax varname(numeric) [, COMPlete(varlist numeric) TOTals ///
+            IMPute(string) PSU(varname numeric) STRata(varname numeric) ///
+            PWeight(varname numeric) ]
+        local sp `varlist'
+
+        * if complete() omitted, infer the model variables (best effort)
+        if "`complete'" == "" {
+            local body `"`cmd'"'
+            if strpos(`"`body'"',"||") ///
+                local body = substr(`"`body'"',1,strpos(`"`body'"',"||")-1)
+            if strpos(`"`body'"'," if ") ///
+                local body = substr(`"`body'"',1,strpos(`"`body'"'," if ")-1)
+            if strpos(`"`body'"'," in ") ///
+                local body = substr(`"`body'"',1,strpos(`"`body'"'," in ")-1)
+            if strpos(`"`body'"',",") ///
+                local body = substr(`"`body'"',1,strpos(`"`body'"',",")-1)
+            gettoken mcmd rest : body
+            local mvars ""
+            foreach tok of local rest {
+                local parts : subinstr local tok "#" " ", all
+                foreach part of local parts {
+                    local dp = 0
+                    forvalues k = 1/`=length("`part'")' {
+                        if substr("`part'",`k',1)=="." local dp = `k'
+                    }
+                    local base "`part'"
+                    if `dp' > 0 local base = substr("`part'",`dp'+1,.)
+                    capture confirm variable `base'
+                    if !_rc {
+                        local seen : list base in mvars
+                        if !`seen' local mvars "`mvars' `base'"
+                    }
+                }
+            }
+            local complete = trim("`mvars'")
+            if "`complete'" != "" {
+                display as text "svyslim: inferred complete(`complete') " ///
+                    "from the model."
+                display as text "  (add complete() explicitly if a needed " ///
+                    "variable was missed, e.g. with if/in or ts operators.)"
+            }
+        }
+
+        * rebuild the option list for the reduction call
+        local opts ""
+        if "`complete'"!="" local opts `"complete(`complete')"'
+        if "`totals'"!=""   local opts `"`opts' totals"'
+        if "`impute'"!=""   local opts `"`opts' impute(`impute')"'
+        if "`psu'"!=""      local opts `"`opts' psu(`psu')"'
+        if "`strata'"!=""   local opts `"`opts' strata(`strata')"'
+        if "`pweight'"!=""  local opts `"`opts' pweight(`pweight')"'
+        local callargs "`sp'"
+        if `"`opts'"'!="" local callargs `"`sp', `opts'"'
+
+        * preserve -> reduce -> analyze -> restore (auto-restores on error)
+        preserve
+        capture noisily svyslim `callargs'
+        if _rc {
+            local rc = _rc
+            display as error "svyslim: reduction step failed (rc=`rc')."
+            exit `rc'
+        }
+        svy, subpop(`sp'): `cmd'
+        restore
+        exit
+    }
+
+    * =================================================================
+    * DATA-REDUCTION MODE (original two-step command; validated)
+    * =================================================================
     syntax varname(numeric) [, COMPlete(varlist numeric) TOTals IMPute(string) ///
         PSU(varname numeric) STRata(varname numeric) PWeight(varname numeric) ]
     local sp `varlist'
