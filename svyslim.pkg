@@ -1,0 +1,20 @@
+v 3
+d svyslim: Reduce complex survey data to a subpopulation while preserving
+d          design-based inference (svy, subpop() on the reduced file
+d          reproduces the full-data result). Includes a one-line prefix
+d          form, totals and impute() options, and verification do-files.
+d
+d Requires: Stata version 14.0 or newer, and data declared with svyset.
+d
+d Distribution-Date: 20260722
+d
+d Author:  David Aduragbemi Okunlola
+d          Department of Sociology, Florida State University
+d Support: email okunloladavid4@gmail.com
+d
+f svyslim.ado
+f svyslim.sthlp
+f svyslim_verify.do
+f svyslim_models_test.do
+f svyslim_dhs_test.do
+f svyslim_oneline_test.do

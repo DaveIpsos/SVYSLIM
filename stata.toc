@@ -1,0 +1,11 @@
+v 3
+d svyslim -- design-preserving subpopulation reduction for complex survey data
+d
+d Reduce a complex survey dataset to an analytic subpopulation while
+d preserving design-based point and variance estimation, so that
+d svy, subpop() on the small file reproduces the full-data result.
+d
+d Author: David Aduragbemi Okunlola
+d Support: okunloladavid4@gmail.com
+d
+p svyslim  reduce complex survey data to a subpopulation, preserving design-based inference
