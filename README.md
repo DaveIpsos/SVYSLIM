@@ -123,21 +123,7 @@ will use, so no marker is dropped for a missing value.
 | `svyslim_dhs_test.do` | proof on the free DHS model dataset |
 | `svyslim_oneline_test.do` | proof the one-line form matches the two-step |
 | `svyslim_scaling_benchmark.do` | speed benchmark vs svy, subpop() at 2-6M rows |
-| `svyslim_scaling_benchmark.do` | speed benchmark vs `svy, subpop()` at 2–6M rows |
-| `Complex_Survey_and_svyslim_Guide.pdf` | beginner-friendly study guide (PDF) |
-| `Complex_Survey_and_svyslim_Guide.docx` | the same guide, editable Word version |
-| `QUICKSTART.txt` | one-page install and syntax reference |
-| `svyslim_manuscript.docx` | Stata Journal manuscript (draft) |
-| `svyslim_manuscript_preview.pdf` | PDF preview of the manuscript |
-| `figure1_subpop.pdf`, `figure2_keepvsslim.pdf` | manuscript figures (grayscale, 300 dpi) |
 
-The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
-from-scratch tutorial: it explains complex survey concepts (weights,
-strata, PSUs, design df), shows with a hand-checkable worked example why
-`keep` and `svy, subpop()` disagree, and walks through `svyslim.ado`
-piece by piece — the code shown there is sliced directly from the ado,
-so the walkthrough always matches the real file, including the `totals`
-and `impute()` options.
 
 ## Install
 
