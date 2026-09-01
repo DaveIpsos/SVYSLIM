@@ -145,7 +145,7 @@ and `impute()` options.
 
 ```stata
 net install svyslim, ///
-    from("https://raw.githubusercontent.com/YOURUSER/svyslim/main/") replace
+    from("https://raw.githubusercontent.com/DaveIpsos/SVYSLIM/main/") replace
 ```
 
 Then `help svyslim`. Rerun the same command to update. To also download
@@ -153,7 +153,7 @@ the verification do-files, run:
 
 ```stata
 net get svyslim, ///
-    from("https://raw.githubusercontent.com/YOURUSER/svyslim/main/")
+    from("https://raw.githubusercontent.com/DaveIpsos/SVYSLIM/main/")
 ```
 
 (Replace `YOURUSER` with your GitHub username and `main` with your
