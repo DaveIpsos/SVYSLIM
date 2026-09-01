@@ -117,6 +117,7 @@ will use, so no marker is dropped for a missing value.
 |---|---|
 | `svyslim.ado` | the command (v1.3) |
 | `svyslim.sthlp` | in-Stata help (`help svyslim`) |
+| `stata.toc`, `svyslim.pkg` | let users net install from GitHub |
 | `svyslim_verify.do` | proof: basic models + `totals` + `impute()`, simulated survey |
 | `svyslim_models_test.do` | proof: betareg / stcox / zip / zinb / tpoisson / tnbreg / multilevel / gsem |
 | `svyslim_dhs_test.do` | proof on the free DHS model dataset |
@@ -124,7 +125,11 @@ will use, so no marker is dropped for a missing value.
 | `svyslim_scaling_benchmark.do` | speed benchmark vs svy, subpop() at 2-6M rows |
 | `svyslim_scaling_benchmark.do` | speed benchmark vs `svy, subpop()` at 2–6M rows |
 | `Complex_Survey_and_svyslim_Guide.pdf` | beginner-friendly study guide (PDF) |
-
+| `Complex_Survey_and_svyslim_Guide.docx` | the same guide, editable Word version |
+| `QUICKSTART.txt` | one-page install and syntax reference |
+| `svyslim_manuscript.docx` | Stata Journal manuscript (draft) |
+| `svyslim_manuscript_preview.pdf` | PDF preview of the manuscript |
+| `figure1_subpop.pdf`, `figure2_keepvsslim.pdf` | manuscript figures (grayscale, 300 dpi) |
 
 The **PDF/Word manual** (`Complex_Survey_and_svyslim_Guide`) is a
 from-scratch tutorial: it explains complex survey concepts (weights,
@@ -136,9 +141,28 @@ and `impute()` options.
 
 ## Install
 
-Copy `svyslim.ado` and `svyslim.sthlp` into your PERSONAL ado folder
-(type `sysdir` in Stata to find it; create it if it does not exist),
-then run `discard`. Check with `which svyslim`.
+**From GitHub (Stata 14+):**
+
+```stata
+net install svyslim, ///
+    from("https://raw.githubusercontent.com/YOURUSER/svyslim/main/") replace
+```
+
+Then `help svyslim`. Rerun the same command to update. To also download
+the verification do-files, run:
+
+```stata
+net get svyslim, ///
+    from("https://raw.githubusercontent.com/YOURUSER/svyslim/main/")
+```
+
+(Replace `YOURUSER` with your GitHub username and `main` with your
+branch. The URL must be the **raw** host and point to the folder that
+holds `stata.toc` and `svyslim.pkg`.)
+
+**Manual install (fallback):** copy `svyslim.ado` and `svyslim.sthlp`
+into your PERSONAL ado folder (type `sysdir` in Stata to find it; create
+it if it does not exist), then run `discard`. Check with `which svyslim`.
 
 ## Verify before relying on it
 
